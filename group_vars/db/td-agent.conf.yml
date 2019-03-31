@@ -1,0 +1,19 @@
+conf:
+  monitor_agent:
+    type: monitor_agent
+    bind: 0.0.0.0
+    port: 24220
+  messages:
+    type: tail
+    format: none
+    tag: "#{Socket.gethostname}.messages"
+    id: "#{Socket.gethostname}_input_messages"
+    path: /var/log/messages
+    pos_file: /var/log/td-agent/messages.pos
+  secure:
+    type: tail
+    format: none
+    tag: "#{Socket.gethostname}.secure"
+    id: "#{Socket.gethostname}_input_secure"
+    path: /var/log/secure
+    pos_file: /var/log/td-agent/secure.pos

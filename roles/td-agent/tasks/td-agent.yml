@@ -1,0 +1,44 @@
+---
+- name: Add rpm repo
+  copy: src=repo dest=/etc/yum.repos.d/td.repo
+
+- name: Install td-agent
+  yum: name=td-agent state=latest
+
+### centos6 と centos7 でパスが異なる
+- name: Change td-agent owner
+  replace:
+    dest: /etc/init.d/td-agent
+    regexp: '^User=td-agent$'
+    replace: 'User=root'
+
+- name: Change td-agent group
+  replace:
+    dest: /etc/init.d/td-agent
+    regexp: '^Group=td-agent$'
+    replace: 'Group=root'
+
+- name: Check plugins
+  command: "td-agent-gem list -i {{ item.name }}"
+  with_items: "{{ td_agent.plugins }}"
+  changed_when: False
+  failed_when: False
+  register: plugin_status
+
+- debug: var=plugin_status
+
+- name: Install plugins
+  command: "td-agent-gem install {{ item.item.name }}"
+  with_items: plugin_status.results
+  when: plugin_status.results is defined and item.stdout_lines[0] == "false"
+
+- name: Copy td-agent template
+  template:
+    src: td-agent.conf
+    dest: /etc/td-agent/td-agent.conf
+    backup: yes
+    force: yes
+  notify: restart td-agent
+
+- name: Start service td-agent
+  service: name=td-agent state=started enabled=yes

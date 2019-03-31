@@ -1,0 +1,38 @@
+td-agent:
+  source:
+    monitor_agent:
+      type: monitor_agent
+      bind: 0.0.0.0
+      port: 24220
+    messages:
+      type: tail
+      format: none
+      tag: "#{Socket.gethostname}.messages"
+      id: "#{Socket.gethostname}_input_messages"
+      path: /var/log/messages
+      pos_file: /var/log/td-agent/messages.pos
+    secure:
+      type: tail
+      format: none
+      tag: "#{Socket.gethostname}.secure"
+      id: "#{Socket.gethostname}_input_secure"
+      path: /var/log/secure
+      pos_file: /var/log/td-agent/secure.pos
+    audit:
+      type: tail
+      format: none
+      tag: "#{Socket.gethostname}.audit"
+      id: "#{Socket.gethostname}_input_audit"
+      path: /var/log/audit/audit.log
+      pos_file: /var/log/td-agent/audit.pos
+  match:
+    type: copy
+    store1:
+      type: forward
+      id: "#{Socket.gethostname}_forward"
+      send_timeout: 60s
+      flush_interval: 0.1s
+      server:
+        host: 10.1.20.135
+        port: 24230
+
