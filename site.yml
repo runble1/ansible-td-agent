@@ -1,7 +1,12 @@
 ---
-- hosts: server
+- hosts: web
   become: yes 
   roles:
     - td-agent
-    - limits
-    - kernel
+#    - limits
+#   - kernel
+
+- hosts: db
+  become: yes
+  roles:
+    - td-agent
