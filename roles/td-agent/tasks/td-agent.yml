@@ -29,7 +29,7 @@
 
 - name: Install plugins
   command: "td-agent-gem install {{ item.item.name }}"
-  with_items: plugin_status.results
+  with_items: "{{ plugin_status.results }}"
   when: plugin_status.results is defined and item.stdout_lines[0] == "false"
 
 - name: Copy td-agent template
