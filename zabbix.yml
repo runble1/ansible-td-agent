@@ -1,0 +1,48 @@
+---
+#- hosts: all
+#  become: True
+#  tasks:
+#    - name: Install zabbix-agent repo
+#      yum: 
+#        name: https://repo.zabbix.com/zabbix/4.0/rhel/6/x86_64/zabbix-release-4.0-1.el6.noarch.rpm
+#        state: present
+#    - name: Install zabbix-agent
+#      yum: name=zabbix-agent
+#      notify: restart_zabbix-agent
+
+- hosts: db
+  become: True
+  tasks:
+    - name: Create MySQL user
+      mysql_user:
+        login_user: root
+        login_password: "tekitou"
+        name: zabbixagent
+        password: "tekitou"
+        priv: "*.*:PROCESS,REPLICATION CLIENT"
+        host: localhost
+        state: present
+    - name: Make directory for zabbix-agent
+      file:
+        path: /var/lib/zabbix
+        state: directory
+        mode: 700
+    - name: Add mysql connection file
+      copy:
+        src: ./zabbixmy.cnf
+        dest: /var/lib/zabbix/.my.cnf
+        mode: 0600
+        owner: zabbix
+        group: zabbix
+      notify: restart_zabbix-agent
+    - name: Add userparameter_mysql for zabbix-agent
+      copy:
+       src: ./userparameter_mysql.conf
+       dest: /etc/zabbix/zabbix_agentd.d/userparameter_mysql.conf
+      notify: restart_zabbix-agent
+
+  handlers:
+    - name: restart_zabbix-agent
+      service:
+        name: zabbix-agent
+        state: restarted

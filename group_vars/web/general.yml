@@ -4,4 +4,4 @@ td_agent:
     dest: /etc/td-agent/td-agent.conf
   plugins:
     - { name: 'fluent-plugin-pan-anonymizer' }
-    - { name: 'fluent-config-regexp-type' }
+    - { name: 'fluent-plugin-remote_syslog' }

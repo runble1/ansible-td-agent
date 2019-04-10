@@ -1,0 +1,42 @@
+---
+- hosts: web
+  become: True
+  tasks:
+    - name: Check td-agent plugins
+      command: "td-agent-gem list -i {{ item.name }}"
+      with_items: "{{ td_agent.plugins }}"
+      changed_when: False
+      failed_when: False
+      register: plugin_status
+
+    - debug: var=plugin_status
+
+    - name: Install td-agent plugins
+      command: "td-agent-gem install {{ item.item.name }}"
+      with_items: "{{ plugin_status.results }}"
+      #when: plugin_status.results is defined and item.stdout_lines[0] == "false"
+      when: plugin_status.results is defined and item.stdout == "false"
+      notify: restart_td-agent 
+
+    - name: Copy syslog server td-agent.conf
+      copy:
+        src: ./syslog-td-agent.conf
+        dest: /etc/td-agent/td-agent.conf
+        backup: yes
+
+    - name: Make directory for td-agent
+      file:
+        path: /etc/td-agent/conf.d
+        state: directory
+        mode: 755
+
+    - name: Copy syslog server td-agent.conf
+      copy:
+        src: ./aggregate.conf
+        dest: /etc/td-agent/conf.d/aggregate.conf
+        backup: yes
+  handlers:
+    - name: restart_td-agent
+      service:
+        name: td-agent
+        state: restarted

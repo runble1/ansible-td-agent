@@ -1,2 +1,7 @@
----
-td_agent_template: td-agent.conf.db
+td_agent:
+  template:
+    src: td-agent.conf
+    dest: /etc/td-agent/td-agent.conf
+  plugins:
+    - { name: 'fluent-plugin-pan-anonymizer' }
+    - { name: 'fluent-plugin-mysqlslowquery' }

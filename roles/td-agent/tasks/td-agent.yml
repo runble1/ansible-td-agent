@@ -25,20 +25,21 @@
   failed_when: False
   register: plugin_status
 
-- debug: var=plugin_status
+- debug: var=plugin_status.results.item.name
 
 - name: Install plugins
   command: "td-agent-gem install {{ item.item.name }}"
   with_items: "{{ plugin_status.results }}"
   when: plugin_status.results is defined and item.stdout_lines[0] == "false"
 
-- name: Copy td-agent template
-  template:
+- name: Copy td-agent.conf
+  copy:
     src: td-agent.conf
     dest: /etc/td-agent/td-agent.conf
-    backup: yes
-    force: yes
+    backup: yes  
+  #template:
+  #  src: td-agent.conf
+  #  dest: /etc/td-agent/td-agent.conf
+  #  backup: yes
+  #  force: yes
   notify: restart td-agent
-
-- name: Start service td-agent
-  service: name=td-agent state=started enabled=yes
